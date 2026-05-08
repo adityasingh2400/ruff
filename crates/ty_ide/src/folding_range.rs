@@ -88,6 +88,9 @@ pub fn folding_ranges(
         .collect();
     visitor.add_comment_ranges(&own_line_comment_ranges);
     visitor.add_custom_region_ranges(&own_line_comment_ranges);
+    visitor
+        .ranges
+        .sort_by_key(|folding_range| folding_range.range.start());
 
     visitor.ranges
 }
@@ -834,14 +837,6 @@ from fastapi import FastAPI
           | |_____________________^
           |
 
-        info[folding-range]: Folding Range (imports)
-          --> main.py:12:1
-           |
-        12 | / import requests
-        13 | | from fastapi import FastAPI
-           | |___________________________^
-           |
-
         info[folding-range]: Folding Range
          --> main.py:5:5
           |
@@ -868,6 +863,14 @@ from fastapi import FastAPI
          9 | |     first = None
         10 | |     bar = None
            | |______________^
+           |
+
+        info[folding-range]: Folding Range (imports)
+          --> main.py:12:1
+           |
+        12 | / import requests
+        13 | | from fastapi import FastAPI
+           | |___________________________^
            |
         ");
     }
@@ -1233,24 +1236,6 @@ finally:
           |
 
         info[folding-range]: Folding Range
-         --> main.py:8:6
-          |
-        8 |   else:
-          |  ______^
-        9 | |     success_action()
-          | |____________________^
-          |
-
-        info[folding-range]: Folding Range
-          --> main.py:10:9
-           |
-        10 |   finally:
-           |  _________^
-        11 | |     cleanup()
-           | |_____________^
-           |
-
-        info[folding-range]: Folding Range
          --> main.py:4:19
           |
         4 |   except ValueError:
@@ -1267,6 +1252,24 @@ finally:
         7 | |     handle_type_error()
           | |_______________________^
           |
+
+        info[folding-range]: Folding Range
+         --> main.py:8:6
+          |
+        8 |   else:
+          |  ______^
+        9 | |     success_action()
+          | |____________________^
+          |
+
+        info[folding-range]: Folding Range
+          --> main.py:10:9
+           |
+        10 |   finally:
+           |  _________^
+        11 | |     cleanup()
+           | |_____________^
+           |
         ");
     }
 
@@ -1604,15 +1607,6 @@ match value:
            |
 
         info[folding-range]: Folding Range
-          --> main.py:16:9
-           |
-        16 |       """:
-           |  _________^
-        17 | |         handle_string()
-           | |_______________________^
-           |
-
-        info[folding-range]: Folding Range
           --> main.py:13:10
            |
         13 |       case """
@@ -1621,6 +1615,15 @@ match value:
         15 | |         beta
         16 | |     """:
            | |_______^
+           |
+
+        info[folding-range]: Folding Range
+          --> main.py:16:9
+           |
+        16 |       """:
+           |  _________^
+        17 | |         handle_string()
+           | |_______________________^
            |
         "#);
     }
@@ -1832,23 +1835,6 @@ def main():
             .build();
 
         assert_snapshot!(test.folding_ranges(), @"
-        info[folding-range]: Folding Range (imports)
-         --> main.py:3:1
-          |
-        3 | / import os
-        4 | | import sys
-          | |__________^
-          |
-
-        info[folding-range]: Folding Range
-         --> main.py:8:12
-          |
-        8 |   def main():
-          |  ____________^
-        9 | |     pass
-          | |________^
-          |
-
         info[folding-range]: Folding Range (region)
          --> main.py:2:1
           |
@@ -1857,6 +1843,14 @@ def main():
         4 | | import sys
         5 | | # endregion
           | |___________^
+          |
+
+        info[folding-range]: Folding Range (imports)
+         --> main.py:3:1
+          |
+        3 | / import os
+        4 | | import sys
+          | |__________^
           |
 
         info[folding-range]: Folding Range (region)
@@ -1868,6 +1862,15 @@ def main():
         10 | | # endregion
            | |___________^
            |
+
+        info[folding-range]: Folding Range
+         --> main.py:8:12
+          |
+        8 |   def main():
+          |  ____________^
+        9 | |     pass
+          | |________^
+          |
         ");
     }
 
@@ -2114,15 +2117,6 @@ def foo():
         assert_snapshot!(
             test.folding_ranges(),
             @"
-        info[folding-range]: Folding Range
-         --> main.py:6:11
-          |
-        6 |   def foo():
-          |  ___________^
-        7 | |     pass
-          | |________^
-          |
-
         info[folding-range]: Folding Range (comment)
          --> main.py:2:1
           |
@@ -2130,6 +2124,15 @@ def foo():
         3 | | # that spans multiple lines
         4 | | # explaining something important
           | |________________________________^
+          |
+
+        info[folding-range]: Folding Range
+         --> main.py:6:11
+          |
+        6 |   def foo():
+          |  ___________^
+        7 | |     pass
+          | |________^
           |
 
         info[folding-range]: Folding Range (comment)
