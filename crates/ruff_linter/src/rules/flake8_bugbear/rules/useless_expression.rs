@@ -57,7 +57,7 @@ use crate::rules::flake8_bugbear::helpers::at_last_top_level_expression_in_cell;
 /// since the wrapping tuple is discarded and almost always indicates a stray
 /// trailing comma. For example:
 /// ```python
-/// foo(),
+/// (foo(),)
 /// ```
 ///
 /// [preview]: https://docs.astral.sh/ruff/preview/
