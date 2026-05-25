@@ -59,3 +59,13 @@ class _:
         return (
             None # comment
         )
+
+
+from typing import override
+
+
+class Derived(BaseCache):
+    @override
+    def get(self, key: str) -> None:
+        print(f"{key} not found")
+        return None

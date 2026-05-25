@@ -9,7 +9,7 @@ use ruff_python_ast::visitor::Visitor;
 use ruff_python_ast::whitespace::indentation;
 use ruff_python_ast::{self as ast, Decorator, ElifElseClause, Expr, Stmt};
 use ruff_python_semantic::SemanticModel;
-use ruff_python_semantic::analyze::visibility::is_property;
+use ruff_python_semantic::analyze::visibility::{is_override, is_property};
 use ruff_python_trivia::{SimpleTokenKind, SimpleTokenizer, is_python_whitespace};
 use ruff_source_file::LineRanges;
 use ruff_text_size::{Ranged, TextRange, TextSize};
@@ -396,6 +396,12 @@ fn unnecessary_return_none(checker: &Checker, decorator_list: &[Decorator], stac
             checker.settings().pydocstyle.property_decorators(),
             checker.semantic(),
         ) {
+            return;
+        }
+
+        // Skip methods decorated with `@override`: an explicit `return None`
+        // can be needed to match the signature of the overridden method.
+        if is_override(decorator_list, checker.semantic()) {
             return;
         }
 

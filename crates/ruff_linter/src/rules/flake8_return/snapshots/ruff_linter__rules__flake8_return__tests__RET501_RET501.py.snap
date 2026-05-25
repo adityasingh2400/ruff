@@ -57,4 +57,7 @@ help: Remove explicit `return None`
    -             None # comment
    -         )
 59 +         return
+60 |
+61 |
+62 | from typing import override
 note: This is an unsafe fix and may change runtime behavior
