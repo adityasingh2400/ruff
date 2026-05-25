@@ -6,7 +6,7 @@ use ruff_python_trivia::CommentRanges;
 use crate::Locator;
 use crate::checkers::ast::LintContext;
 use crate::package::PackageRoot;
-use crate::preview::is_allow_nested_roots_enabled;
+use crate::preview::{is_allow_nested_roots_enabled, is_skip_root_tests_dir_enabled};
 use crate::registry::Rule;
 use crate::rules::flake8_builtins::rules::stdlib_module_shadowing;
 use crate::rules::flake8_no_pep420::rules::implicit_namespace_package;
@@ -25,6 +25,7 @@ pub(crate) fn check_file_path(
     // flake8-no-pep420
     if context.is_rule_enabled(Rule::ImplicitNamespacePackage) {
         let allow_nested_roots = is_allow_nested_roots_enabled(settings);
+        let exempt_root_tests_dir = is_skip_root_tests_dir_enabled(settings);
         implicit_namespace_package(
             path,
             package,
@@ -33,6 +34,7 @@ pub(crate) fn check_file_path(
             &settings.project_root,
             &settings.src,
             allow_nested_roots,
+            exempt_root_tests_dir,
             context,
         );
     }

@@ -12,6 +12,7 @@ mod tests {
 
     use crate::assert_diagnostics;
     use crate::settings::LinterSettings;
+    use crate::settings::types::PreviewMode;
     use crate::test::{test_path, test_resource_path};
 
     #[test_case(Path::new("test_fail_empty"), Path::new("example.py"))]
@@ -36,6 +37,59 @@ mod tests {
                 namespace_packages: vec![test_resource_path(
                     "fixtures/flake8_no_pep420/test_pass_namespace_package",
                 )],
+                ..LinterSettings::for_rule(Rule::ImplicitNamespacePackage)
+            },
+        )?;
+        insta::with_settings!({filters => vec![(r"\\", "/")]}, {
+            assert_diagnostics!(snapshot, diagnostics);
+        });
+        Ok(())
+    }
+
+    #[test_case(Path::new("tests/example.py"))]
+    #[test_case(Path::new("tests/integration/example.py"))]
+    fn tests_dir_stable(path: &Path) -> Result<()> {
+        let snapshot = format!(
+            "tests_dir_stable_{}",
+            path.to_string_lossy().replace(['/', '.'], "_")
+        );
+        let p = PathBuf::from(format!(
+            "flake8_no_pep420/test_pass_tests_dir/{}",
+            path.display()
+        ));
+        let diagnostics = test_path(
+            p.as_path(),
+            &LinterSettings {
+                project_root: test_resource_path(
+                    "fixtures/flake8_no_pep420/test_pass_tests_dir",
+                ),
+                ..LinterSettings::for_rule(Rule::ImplicitNamespacePackage)
+            },
+        )?;
+        insta::with_settings!({filters => vec![(r"\\", "/")]}, {
+            assert_diagnostics!(snapshot, diagnostics);
+        });
+        Ok(())
+    }
+
+    #[test_case(Path::new("tests/example.py"))]
+    #[test_case(Path::new("tests/integration/example.py"))]
+    fn tests_dir_preview(path: &Path) -> Result<()> {
+        let snapshot = format!(
+            "tests_dir_preview_{}",
+            path.to_string_lossy().replace(['/', '.'], "_")
+        );
+        let p = PathBuf::from(format!(
+            "flake8_no_pep420/test_pass_tests_dir/{}",
+            path.display()
+        ));
+        let diagnostics = test_path(
+            p.as_path(),
+            &LinterSettings {
+                project_root: test_resource_path(
+                    "fixtures/flake8_no_pep420/test_pass_tests_dir",
+                ),
+                preview: PreviewMode::Enabled,
                 ..LinterSettings::for_rule(Rule::ImplicitNamespacePackage)
             },
         )?;

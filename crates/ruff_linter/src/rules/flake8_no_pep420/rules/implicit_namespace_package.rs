@@ -67,6 +67,7 @@ pub(crate) fn implicit_namespace_package(
     project_root: &Path,
     src: &[PathBuf],
     allow_nested_roots: bool,
+    exempt_root_tests_dir: bool,
     context: &LintContext,
 ) {
     if package.is_none()
@@ -88,6 +89,10 @@ pub(crate) fn implicit_namespace_package(
             .is_none_or(|range| ShebangDirective::try_extract(locator.slice(*range)).is_none())
         // Ignore PEP 723 scripts.
         && ScriptTag::parse(locator.contents().as_bytes()).is_none()
+        // A `tests` directory at the project root typically holds pytest modules
+        // that are intentionally not an importable package, so reporting INP001
+        // there is a false positive (https://github.com/astral-sh/ruff/issues/6474).
+        && !(exempt_root_tests_dir && is_in_root_tests_directory(path, project_root))
     {
         context.report_diagnostic(
             ImplicitNamespacePackage {
@@ -115,4 +120,12 @@ pub(crate) fn implicit_namespace_package(
             }
         }
     }
+}
+
+/// Returns `true` if `path` lives inside a `tests` directory at the root of the project.
+fn is_in_root_tests_directory(path: &Path, project_root: &Path) -> bool {
+    path.strip_prefix(project_root)
+        .ok()
+        .and_then(|relative| relative.components().next())
+        .is_some_and(|component| component.as_os_str() == "tests")
 }
